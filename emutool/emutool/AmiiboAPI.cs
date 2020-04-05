@@ -13,6 +13,11 @@ namespace emutool
         public string CharacterName { get; set; }
         public string ImageURL      { get; set; }
         public string AmiiboId      { get; set; }
+
+        public override string ToString()
+        {
+            return AmiiboName;
+        }
     }
 
     static class AmiiboAPI

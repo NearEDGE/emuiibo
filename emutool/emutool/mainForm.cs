@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -8,9 +9,13 @@ namespace emutool
 {
     public partial class MainForm : Form
     {
+        List<Amiibo> CurrentAmiibo;
+
         public MainForm()
         {
             InitializeComponent();
+
+            CurrentAmiibo = new List<Amiibo>();
 
             if (AmiiboAPI.GetAllAmiibos())
             {
@@ -19,9 +24,7 @@ namespace emutool
                 if (AmiiboAPI.AmiiboSeries.Any())
                 {
                     foreach (string amiiboSerie in AmiiboAPI.AmiiboSeries)
-                    {
                         comboBox1.Items.Add(amiiboSerie);
-                    }
 
                     comboBox1.SelectedIndex = 0;
                 }
@@ -40,16 +43,17 @@ namespace emutool
         private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             comboBox2.Items.Clear();
+            CurrentAmiibo.Clear();
 
             if (AmiiboAPI.AllAmiibo.Any())
             {
                 foreach (Amiibo amiibo in AmiiboAPI.AllAmiibo)
-                {
                     if (amiibo.SeriesName == comboBox1.Text)
-                    {
-                        comboBox2.Items.Add(amiibo.AmiiboName);
-                    }
-                }
+                        CurrentAmiibo.Add(amiibo);
+
+                CurrentAmiibo.Sort(delegate (Amiibo A, Amiibo B) { return A.AmiiboName.CompareTo(B.AmiiboName); });
+
+                comboBox2.Items.AddRange(CurrentAmiibo.ToArray());
 
                 comboBox2.SelectedIndex = 0;
             }
@@ -57,8 +61,8 @@ namespace emutool
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            pictureBox1.ImageLocation = AmiiboAPI.AllAmiibo.Where(amiibo => amiibo.SeriesName == comboBox1.Text && amiibo.AmiiboName == comboBox2.Text).SingleOrDefault().ImageURL;
-            textBox1.Text = AmiiboAPI.AllAmiibo.Where(amiibo => amiibo.SeriesName == comboBox1.Text && amiibo.AmiiboName == comboBox2.Text).SingleOrDefault().AmiiboName;
+            pictureBox1.ImageLocation = CurrentAmiibo[comboBox2.SelectedIndex].ImageURL;
+            textBox1.Text = CurrentAmiibo[comboBox2.SelectedIndex].AmiiboName;
         }
 
         private void Button1_Click(object sender, EventArgs e)
